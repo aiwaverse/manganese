@@ -1,5 +1,4 @@
 open Types
-open Option
 
 type expr =
   | Number of int
@@ -25,17 +24,3 @@ and operator =
   | EQ of expr * expr
   | And of expr * expr
   | Or of expr * expr
-
-module Ambient = Map.Make (String)
-
-let rec typeinfer (e : expr) ambient =
-  match e with
-  | Number _ -> Some Int
-  | Boolean _ -> Some Bool
-  | If (cond, e1, e2)
-    when typeinfer cond ambient = Some Bool
-         && typeinfer e1 ambient = typeinfer e2 ambient ->
-      typeinfer e1 ambient
-  | Tuple (e1, e2)
-    when is_some (typeinfer e1 ambient) && is_some (typeinfer e2 ambient) ->
-      Some (Pair (get (typeinfer e1 ambient), get (typeinfer e2 ambient)))
