@@ -1,0 +1,4 @@
+(executable
+ (public_name manganese)
+ (name main)
+ (libraries manganese))
