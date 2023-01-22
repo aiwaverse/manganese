@@ -11,6 +11,7 @@ type expr =
   | Tuple of expr * expr
   | Fst of expr
   | Snd of expr
+  | Var of string * expr
 
 and operator =
   | Add of expr * expr
