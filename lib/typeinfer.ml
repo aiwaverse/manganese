@@ -3,13 +3,13 @@ open Types
 open Either
 module Ambient = Map.Make (String)
 
-let rec typeinfer (e : expr) ambient =
+let rec typeinfer (e : expr) (ambient : expr Ambient.t) =
   match e with
   | Number _ -> Right Int
   | Boolean _ -> Right Bool
   | If (cond, e1, e2) -> typeinferIf (If (cond, e1, e2)) ambient
 
-and typeinferIf (e : expr) ambient =
+and typeinferIf (e : expr) (ambient : expr Ambient.t) =
   match e with
   | If (cond, e1, e2) -> (
       match typeinfer cond ambient with
