@@ -3,14 +3,11 @@ open Types
 type expr =
   | Number of int
   | Boolean of bool
+  | If of expr * expr * expr
   | Function of expr * l1Type * expr
   | App of expr * expr
   | AppOp of operator * expr * expr
-  | If of expr * expr * expr
   | Let of expr * l1Type * expr
-  | Tuple of expr * expr
-  | Fst of expr
-  | Snd of expr
   | Var of string * expr
 
 and operator =
