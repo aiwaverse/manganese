@@ -45,9 +45,13 @@ open Manganese.Expr
 %token MATCH
 %token WITH
 %token PIPE
+%token AND
+%token OR
 
 %nonassoc IN
 %nonassoc ELSE
+%left AND
+%left OR
 %left LEQ
 %left GEQ
 %left LESSER
@@ -90,6 +94,8 @@ expr:
   | e1 = expr; EQUALS; e2 = expr { AppOp (EQ, e1, e2) }
   | e1 = expr; LESSER; e2 = expr { AppOp (LT, e1, e2) }
   | e1 = expr; GREATER; e2 = expr { AppOp (GT, e1, e2) }
+  | e1 = expr; AND; e2 = expr { AppOp (And, e1, e2) }
+  | e1 = expr; OR; e2 = expr { AppOp (Or, e1, e2) }
   | LET; x = ID; COLON; t = types; EQUALS; e1 = expr; IN; e2 = expr { Let (x, t, e1, e2) }
   | LET; REC; f = ID; COLON; t1 = types; ARROW; t2 = types; EQUALS; FN; x = ID; COLON; types; FUNCTIONARROW; e1 = expr; IN; e2 = expr { LetRec (f, t1, t2, x, e1, e2) } 
   | LET; REC; f = ID; LPAREN; x = ID; COLON; t1 = types; RPAREN; COLON; t2 = types; EQUALS; e1 = expr; IN; e2 = expr { LetRec (f, t1, t2, x, e1, e2) }

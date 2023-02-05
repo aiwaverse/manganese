@@ -24,6 +24,8 @@ rule read =
   | "*" { TIMES }
   | "+" { PLUS }
   | "-" { MINUS }
+  | "&&" { AND }
+  | "||" { OR }
   | "div" { DIV }
   | "(" { LPAREN }
   | ")" { RPAREN }
