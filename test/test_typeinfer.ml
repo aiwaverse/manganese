@@ -453,7 +453,7 @@ let isNothingTests =
       assert_equal (Right Bool) (typeinfer (IsNothing (Nothing Int))) );
     ( "is nothing - well typed, just" >:: fun _ ->
       assert_equal (Right Bool) (typeinfer (IsNothing (Just (Number 3)))) );
-    ( "is nothing - poorly typed, argument isn't a list" >:: fun _ ->
+    ( "is nothing - poorly typed, argument isn't a maybe" >:: fun _ ->
       assert_bool "failed on is nothing"
         (is_left (typeinfer (IsNothing (Boolean true)))) );
     ( "is nothing - poorly typed, argument is poorly typed" >:: fun _ ->
