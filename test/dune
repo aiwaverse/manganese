@@ -1,2 +1,4 @@
 (test
- (name manganese))
+ (name test_typeinfer)
+ (libraries manganese ounit2)
+ )
