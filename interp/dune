@@ -1,0 +1,8 @@
+(library
+ (name interp)
+ (libraries manganese))
+
+(menhir
+ (modules parser))
+
+(ocamllex lexer)

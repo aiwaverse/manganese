@@ -1,0 +1,56 @@
+{
+  open Parser
+}
+
+let white = [' ' '\t']+
+let digit = ['0'-'9']
+let int = '-'? digit+
+let letter = ['a'-'z' 'A'-'Z']
+let id = letter+
+
+rule read =
+  parse
+  | white { read lexbuf }
+  | "true" { TRUE }
+  | "false" { FALSE }
+  | "int" { TINT }
+  | "bool" { TBOOL }
+  | "->" { ARROW }
+  | ":" { COLON }
+  | "<=" { LEQ }
+  | "<" { LESSER }
+  | ">=" { GEQ }
+  | ">" { GREATER }
+  | "*" { TIMES }
+  | "+" { PLUS }
+  | "-" { MINUS }
+  | "div" { DIV }
+  | "(" { LPAREN }
+  | ")" { RPAREN }
+  | "let" { LET }
+  | "=" { EQUALS }
+  | "in" { IN }
+  | "if" { IF }
+  | "then" { THEN }
+  | "else" { ELSE }
+  | "fn" { FN }
+  | "rec" { REC }
+  | "[" { OPENBRACKETS }
+  | "]" { CLOSEBRACKETS }
+  | "Maybe" { MAYBE }
+  | "," { COMMA }
+  | "=>" { FUNCTIONARROW }
+  | "fst" { FST }
+  | "snd" { SND }
+  | "::" { CONS }
+  | "nil" { NIL }
+  | "hd" { HEAD }
+  | "tl" { TAIL }
+  | "Just" { JUST }
+  | "Nothing" { NOTHING }
+  | "match" { MATCH }
+  | "with" { WITH }
+  | "|" { PIPE }
+  | id { ID (Lexing.lexeme lexbuf) }
+  | int { INT (int_of_string (Lexing.lexeme lexbuf)) }
+  | eof { EOF }
