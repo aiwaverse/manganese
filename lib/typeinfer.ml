@@ -19,12 +19,15 @@ let rec typeinfer ?(ambient : l1Type Ambient.t = Ambient.empty) (e : expr) =
   | Snd _ as e -> typeinferSnd e ambient
   | Nil _ as e -> typeinferNil e
   | Cons _ as e -> typeinferCons e ambient
+  | Head _ as e -> typeinferHead e ambient
+  | Tail _ as e -> typeinferTail e ambient
   | Nothing _ as e -> typeinferNothing e
   | Just _ as e -> typeinferJust e ambient
   | IsEmpty _ as e -> typeinferIsEmpty e ambient
   | IsNothing _ as e -> typeinferIsNothing e ambient
   | MatchList _ as e -> typeinferMatchList e ambient
-  | _ -> Left "Not Implemented"
+  | MatchMaybe _ as e -> typeinferMatchMaybe e ambient
+  | FromJust _ as e -> typeinferFromJust e ambient
 
 and typeinferIf (e : expr) (ambient : l1Type Ambient.t) =
   match e with
@@ -35,7 +38,7 @@ and typeinferIf (e : expr) (ambient : l1Type Ambient.t) =
           | Right ee1 -> (
               match typeinfer e2 ~ambient with
               | Right ee2 ->
-                  if ee1 == ee2 then Right ee1
+                  if ee1 = ee2 then Right ee1
                   else
                     Left
                       ("typeinfer failed on If, e1 and e2 types are different, \
@@ -126,7 +129,7 @@ and typeinferApp (e : expr) (ambient : l1Type Ambient.t) =
       match typeinfer f ~ambient with
       | Right (Func (t1, t2)) -> (
           match typeinfer arg ~ambient with
-          | Right t when t == t1 -> Right t2
+          | Right t when t = t1 -> Right t2
           | Right tErr ->
               Left
                 ("typeinferApp failed on second argument, expected "
@@ -168,7 +171,7 @@ and typeinferLet (e : expr) (ambient : l1Type Ambient.t) =
   match e with
   | Let (varName, varType, varDefinition, body) -> (
       match typeinfer varDefinition ~ambient with
-      | Right t when t == varType ->
+      | Right t when t = varType ->
           typeinfer body ~ambient:(Ambient.add varName varType ambient)
       | Right tErr ->
           Left
@@ -183,7 +186,7 @@ and typeinferLetRec (e : expr) (ambient : l1Type Ambient.t) =
       let gamma' = Ambient.add fName (Func (t1, t2)) ambient in
       match typeinfer e1 ~ambient:(Ambient.add innerFName t1 gamma') with
       | Right t ->
-          if t == t2 then typeinfer e2 ~ambient:gamma'
+          if t = t2 then typeinfer e2 ~ambient:gamma'
           else
             Left
               ("typeinfer failed on let rec, expected type " ^ print_l1Type t2
@@ -203,7 +206,7 @@ and typeinferCons (e : expr) (ambient : l1Type Ambient.t) =
       | Right t -> (
           match typeinfer xs ~ambient with
           | Right (List xt) ->
-              if t == xt then Right (List t)
+              if t = xt then Right (List t)
               else
                 Left
                   ("typeinfer failed on Cons, expected type " ^ print_l1Type xt
@@ -297,3 +300,27 @@ and typeinferMatchMaybe (e : expr) (ambient : l1Type Ambient.t) =
            ^ print_l1Type t)
       | Left err -> Left ("typeinfer failed on MatchMaybe\n" ^ err))
   | _ -> Left "typeinferMatchMaybe used on something that isn't a MatchMaybe"
+
+and typeinferHead (e : expr) (ambient : l1Type Ambient.t) =
+  match e with
+  | Head xs -> (
+      match typeinfer xs ~ambient with
+      | Right (List t) -> Right t
+      | Right t ->
+          Left
+            ("typeinfer failed on Head, expected a list, found "
+           ^ print_l1Type t)
+      | Left err -> Left ("typeinfer failed on Head\n" ^ err))
+  | _ -> Left "typeinferHead used on something that isn't a Head"
+
+and typeinferTail (e : expr) (ambient : l1Type Ambient.t) =
+  match e with
+  | Tail xs -> (
+      match typeinfer xs ~ambient with
+      | Right (List _ as t) -> Right t
+      | Right t ->
+          Left
+            ("typeinfer failed on Tail, expected a list, found "
+           ^ print_l1Type t)
+      | Left err -> Left ("typeinfer failed on Tail\n" ^ err))
+  | _ -> Left "typeinferTail used on something that isn't a Tail"
