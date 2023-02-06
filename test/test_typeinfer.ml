@@ -461,7 +461,7 @@ let isNothingTests =
         (is_left (typeinfer (IsNothing (Var "x")))) );
   ]
 
-let fromJusttests =
+let fromJustTests =
   [
     ( "from just - well typed, nothing" >:: fun _ ->
       assert_equal (Right Int) (typeinfer (FromJust (Nothing Int))) );
@@ -481,6 +481,6 @@ let tests =
        @ appOpTests @ letTests @ letRecTests @ fstTests @ sndTests @ nilTests
        @ consTests @ headTests @ tailTests @ nothingTests @ justTests
        @ matchListTests @ matchMaybeTests @ isEmptyTests @ isNothingTests
-       @ fromJusttests
+       @ fromJustTests
 
 let _ = run_test_tt_main tests
