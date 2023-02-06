@@ -39,7 +39,7 @@ rule read =
   | "rec" { REC }
   | "[" { OPENBRACKETS }
   | "]" { CLOSEBRACKETS }
-  | "Maybe" { MAYBE }
+  | "maybe" { MAYBE }
   | "," { COMMA }
   | "=>" { FUNCTIONARROW }
   | "fst" { FST }
@@ -48,8 +48,8 @@ rule read =
   | "nil" { NIL }
   | "hd" { HEAD }
   | "tl" { TAIL }
-  | "Just" { JUST }
-  | "Nothing" { NOTHING }
+  | "just" { JUST }
+  | "nothing" { NOTHING }
   | "match" { MATCH }
   | "with" { WITH }
   | "|" { PIPE }
