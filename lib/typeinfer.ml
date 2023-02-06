@@ -3,6 +3,9 @@ open Types
 open Either
 module Ambient = Map.Make (String)
 
+let varToVarType (e : expr) (t : l1Type) =
+  match e with Var x -> VarType (x, t) | _ -> e
+
 let rec typeinfer ?(ambient : l1Type Ambient.t = Ambient.empty) (e : expr) =
   match e with
   | Number _ -> Right Int
@@ -28,6 +31,7 @@ let rec typeinfer ?(ambient : l1Type Ambient.t = Ambient.empty) (e : expr) =
   | MatchList _ as e -> typeinferMatchList e ambient
   | MatchMaybe _ as e -> typeinferMatchMaybe e ambient
   | FromJust _ as e -> typeinferFromJust e ambient
+  | VarType _ as e -> typeinferVarType e
 
 and typeinferIf (e : expr) (ambient : l1Type Ambient.t) =
   match e with
@@ -277,7 +281,11 @@ and typeinferMatchList (e : expr) (ambient : l1Type Ambient.t) =
             (If
                ( IsEmpty e1,
                  e2,
-                 Let (x, t, Head e1, Let (xs, List t, Tail e1, e3)) ))
+                 Let
+                   ( x,
+                     t,
+                     Head (varToVarType e1 (List t)),
+                     Let (xs, List t, Tail (varToVarType e1 (List t)), e3) ) ))
             ambient
       | Right t ->
           Left
@@ -292,7 +300,10 @@ and typeinferMatchMaybe (e : expr) (ambient : l1Type Ambient.t) =
       match typeinfer e1 ~ambient with
       | Right (Maybe t) ->
           typeinferIf
-            (If (IsNothing e1, e2, Let (x, t, FromJust e1, e3)))
+            (If
+               ( IsNothing e1,
+                 e2,
+                 Let (x, t, FromJust (varToVarType e1 (Maybe t)), e3) ))
             ambient
       | Right t ->
           Left
@@ -324,3 +335,8 @@ and typeinferTail (e : expr) (ambient : l1Type Ambient.t) =
            ^ print_l1Type t)
       | Left err -> Left ("typeinfer failed on Tail\n" ^ err))
   | _ -> Left "typeinferTail used on something that isn't a Tail"
+
+and typeinferVarType (e : expr) =
+  match e with
+  | VarType (_, t) -> Right t
+  | _ -> Left "typeinferVarType used on something that isn't a vartype"

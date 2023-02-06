@@ -403,6 +403,24 @@ let matchListTests =
                    "x",
                    "xs",
                    AppOp (Add, Number 1, Var "x") )))) );
+    ( "match list - well typed, plays with scopes" >:: fun _ ->
+      assert_equal (Right Int)
+        (typeinfer
+           (LetRec
+              ( "len",
+                List Int,
+                Int,
+                "x",
+                MatchList
+                  ( Var "x",
+                    Number 0,
+                    "x",
+                    "xs",
+                    AppOp (Add, Number 1, App (Var "len", Var "xs")) ),
+                App
+                  ( Var "len",
+                    Cons (Number 1, Cons (Number 2, Cons (Number 3, Nil Int)))
+                  ) ))) );
   ]
 
 let matchMaybeTests =
