@@ -3,9 +3,6 @@ open Types
 open Either
 module Ambient = Map.Make (String)
 
-let varToVarType (e : expr) (t : l1Type) =
-  match e with Var x -> VarType (x, t) | _ -> e
-
 let rec typeinfer ?(ambient : l1Type Ambient.t = Ambient.empty) (e : expr) =
   match e with
   | Number _ -> Right Int
@@ -31,7 +28,6 @@ let rec typeinfer ?(ambient : l1Type Ambient.t = Ambient.empty) (e : expr) =
   | MatchList _ as e -> typeinferMatchList e ambient
   | MatchMaybe _ as e -> typeinferMatchMaybe e ambient
   | FromJust _ as e -> typeinferFromJust e ambient
-  | VarType _ as e -> typeinferVarType e
 
 and typeinferIf (e : expr) (ambient : l1Type Ambient.t) =
   match e with
@@ -276,17 +272,30 @@ and typeinferMatchList (e : expr) (ambient : l1Type Ambient.t) =
   match e with
   | MatchList (e1, e2, x, xs, e3) -> (
       match typeinfer e1 ~ambient with
-      | Right (List t) ->
-          typeinferIf
-            (If
-               ( IsEmpty e1,
-                 e2,
-                 Let
-                   ( x,
-                     t,
-                     Head (varToVarType e1 (List t)),
-                     Let (xs, List t, Tail (varToVarType e1 (List t)), e3) ) ))
-            ambient
+      | Right (List t) -> (
+          match typeinfer e2 ~ambient with
+          | Right t2 -> (
+              match
+                typeinfer e3
+                  ~ambient:
+                    (Ambient.add_seq
+                       (Seq.cons (x, t) (Seq.return (xs, List t)))
+                       ambient)
+              with
+              | Right t3 when t2 = t3 -> Right t2
+              | Right tErr ->
+                  Left
+                    ("typeinfer failed on MatchList, e2 and e3 types don't \
+                      match, e2 is " ^ print_l1Type t2 ^ " and e3 is "
+                   ^ print_l1Type tErr)
+              | Left err ->
+                  Left
+                    ("typeinfer failed on MatchList, e3 typeinfer failed with\n"
+                   ^ err))
+          | Left err ->
+              Left
+                ("typeinfer failed on MatchList, e2 typeinfer failed with\n"
+               ^ err))
       | Right t ->
           Left
             ("typeinfer failed on MatchList, expected e1 to be a List, found "
@@ -298,16 +307,27 @@ and typeinferMatchMaybe (e : expr) (ambient : l1Type Ambient.t) =
   match e with
   | MatchMaybe (e1, e2, x, e3) -> (
       match typeinfer e1 ~ambient with
-      | Right (Maybe t) ->
-          typeinferIf
-            (If
-               ( IsNothing e1,
-                 e2,
-                 Let (x, t, FromJust (varToVarType e1 (Maybe t)), e3) ))
-            ambient
+      | Right (Maybe t) -> (
+          match typeinfer e2 ~ambient with
+          | Right t2 -> (
+              match typeinfer e3 ~ambient:(Ambient.add x t ambient) with
+              | Right t3 when t2 = t3 -> Right t2
+              | Right tErr ->
+                  Left
+                    ("typeinfer failed on MatchMaybe, e2 and e3 types don't \
+                      match, e2 is " ^ print_l1Type t2 ^ " and e3 is "
+                   ^ print_l1Type tErr)
+              | Left err ->
+                  Left
+                    ("typeinfer failed on MatchMaybe, e3 typeinfer failed with\n"
+                   ^ err))
+          | Left err ->
+              Left
+                ("typeinfer failed on MatchMaybe, e2 typeinfer failed with\n"
+               ^ err))
       | Right t ->
           Left
-            ("typeinfer failed on MatchMaybe, expected e1 to be a Maybe, found "
+            ("typeinfer failed on MatchMaybe, expected e1 to be a List, found "
            ^ print_l1Type t)
       | Left err -> Left ("typeinfer failed on MatchMaybe\n" ^ err))
   | _ -> Left "typeinferMatchMaybe used on something that isn't a MatchMaybe"
@@ -335,8 +355,3 @@ and typeinferTail (e : expr) (ambient : l1Type Ambient.t) =
            ^ print_l1Type t)
       | Left err -> Left ("typeinfer failed on Tail\n" ^ err))
   | _ -> Left "typeinferTail used on something that isn't a Tail"
-
-and typeinferVarType (e : expr) =
-  match e with
-  | VarType (_, t) -> Right t
-  | _ -> Left "typeinferVarType used on something that isn't a vartype"

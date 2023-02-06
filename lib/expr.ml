@@ -24,6 +24,5 @@ type expr =
   | IsEmpty of expr
   | IsNothing of expr
   | FromJust of expr
-  | VarType of string * l1Type
 
 and operator = Add | Sub | Mul | Div | LT | LTE | GT | GTE | EQ | And | Or
