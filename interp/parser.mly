@@ -60,6 +60,10 @@ open Manganese.Expr
 %left MINUS
 %left TIMES
 %left DIV
+%left HEAD
+%left TAIL
+%left FST
+%left SND
 %left Application
 %right CONS
 
@@ -112,4 +116,12 @@ expr:
   | NOTHING; COLON; t = types { Nothing t }
   | MATCH; e1 = expr; WITH; NOTHING; FUNCTIONARROW; e2 = expr; PIPE; JUST; x = ID; FUNCTIONARROW; e3 = expr { MatchMaybe (e1, e2, x, e3) }
   | LPAREN; e=expr; RPAREN { e }
-  ;
+  | OPENBRACKETS; vl = list_fields; CLOSEBRACKETS; COLON; OPENBRACKETS; t = types; CLOSEBRACKETS { List.fold_right (fun elem acc -> Cons(elem, acc)) vl (Nil t)}
+  | FN; x = list(argument_list); FUNCTIONARROW; body = expr { List.fold_right (fun (e, t) acc -> Function(e, t, acc)) x body }
+  ; 
+
+list_fields:
+  vl = separated_list(COMMA, expr) { vl };
+
+argument_list:
+  LPAREN; e = ID; COLON; t = types; RPAREN; { (e, t) }
