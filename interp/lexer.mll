@@ -5,8 +5,9 @@
 let white = [' ' '\t']+
 let digit = ['0'-'9']
 let int = '-'? digit+
-let letter = ['a'-'z' 'A'-'Z' '_']
-let id = letter+
+let letter = ['a'-'z' 'A'-'Z']
+let letterDigitUnderscore = ['a'-'z' 'A'-'Z' '0'-'9' '_']
+let id = letter letterDigitUnderscore*
 
 rule read =
   parse
