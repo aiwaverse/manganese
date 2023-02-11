@@ -1,0 +1,22 @@
+# Manganese: Interpretador e parser da linguagem L1
+## O que é?
+Manganese é um interpretador com checagem de tipos para a linguagem L1, adicionamente contém um parser, capaz de transformar uma string da linguagem de alto nível na representação interna (que então é checada e interpretada).
+## Tipos
+| Tipo  | Representação Interna  | Representação em alto nível  |
+| ------------ | ------------ | ------------ |
+| Inteiros  | Int  | int  |
+| Booleanos  | Bool  | bool  |
+| Funções  | Func(T1, T2)  | T1 -> T2  |
+| Pares  | Pair(T1, T2)  | (T1, T2)  |
+| Listas |  List(T) | [T]  |
+| Maybe/Option | Maybe(T) | maybe T
+
+## Construções
+As possíveis construções da linguagem, em alto nível:
+| Números  | ... -1, 0, 1, ..  |
+| Booleanos |  true, false |
+| Condicional  | if e1 then e2 else e3  |
+| Funções anônimas  | fn x : int => x + 1  |
+| asd  |  asdad |
+
+
