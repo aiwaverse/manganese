@@ -1,4 +1,4 @@
-(test
- (name test_typeinfer)
+(tests
+ (names test_typeinfer test_eval)
  (libraries manganese ounit2)
  )
