@@ -42,6 +42,9 @@ open Manganese.Expr
 %token TAIL
 %token JUST
 %token NOTHING
+%token ISNOTHING
+%token FROMJUST
+%token ISEMPTY
 %token MATCH
 %token WITH
 %token PIPE
@@ -118,6 +121,9 @@ expr:
   | LPAREN; e=expr; RPAREN { e }
   | OPENBRACKETS; vl = list_fields; CLOSEBRACKETS; COLON; OPENBRACKETS; t = types; CLOSEBRACKETS { List.fold_right (fun elem acc -> Cons(elem, acc)) vl (Nil t)}
   | FN; x = list(argument_list); FUNCTIONARROW; body = expr { List.fold_right (fun (e, t) acc -> Function(e, t, acc)) x body }
+  | ISNOTHING; e = expr { IsNothing(e) }
+  | FROMJUST; e = expr { FromJust(e) }
+  | ISEMPTY; e = expr { IsEmpty(e) }
   ; 
 
 list_fields:

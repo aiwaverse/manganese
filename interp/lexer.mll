@@ -54,6 +54,9 @@ rule read =
   | "match" { MATCH }
   | "with" { WITH }
   | "|" { PIPE }
+  | "isnothing" { ISNOTHING }
+  | "isempty" { ISEMPTY }
+  | "fromjust" { FROMJUST }
   | id { ID (Lexing.lexeme lexbuf) }
   | int { INT (int_of_string (Lexing.lexeme lexbuf)) }
   | eof { EOF }
