@@ -4,6 +4,36 @@ open Manganese.Typeinfer
 open Manganese.Types
 open Manganese.Eval
 open Either
+open LNoise
+
+let rec user_input prompt verbose_parser verbose_typeinfer cb =
+  match linenoise prompt with
+  | None -> ()
+  | Some value -> (
+      cb value;
+      try
+        let parsedInput = parse value in
+        if !verbose_parser then
+          print_endline ("Parsed expression: " ^ print_raw_expr parsedInput);
+        let inferredType = typeinfer parsedInput in
+        match inferredType with
+        | Left err ->
+            print_endline err;
+            user_input prompt verbose_parser verbose_typeinfer cb
+        | Right t -> (
+            if !verbose_typeinfer then
+              print_endline ("Expression type: " ^ print_l1Type t);
+            let evaluatedExpr = eval parsedInput in
+            match evaluatedExpr with
+            | Left err ->
+                print_endline ("Evaluation failed. " ^ err);
+                user_input prompt verbose_parser verbose_typeinfer cb
+            | Right v ->
+                print_endline (print_expr v);
+                user_input prompt verbose_parser verbose_typeinfer cb)
+      with ParseError ->
+        print_endline "Parser error, please check input.";
+        user_input prompt verbose_parser verbose_typeinfer cb)
 
 let usage_msg = "manganese [-verbose-parser] [-verbose-typeinfer]"
 let verbose_parser = ref false
@@ -23,22 +53,8 @@ let speclist =
 
 let () =
   Arg.parse speclist anon_fun usage_msg;
-  try
-    while true do
-      print_string "\n> ";
-      let inputMessage = read_line () in
-      let parsedInput = parse inputMessage in
-      if !verbose_parser then
-        print_endline ("Parsed expression: " ^ print_expr parsedInput);
-      let inferredType = typeinfer parsedInput in
-      match inferredType with
-      | Left err -> print_endline err
-      | Right t -> (
-          if !verbose_typeinfer then
-            print_endline ("Expression type: " ^ print_l1Type t);
-          let evaluatedExpr = eval parsedInput in
-          match evaluatedExpr with
-          | Left err -> print_endline ("Evaluation failed. " ^ err)
-          | Right v -> print_endline (print_expr v))
-    done
-  with End_of_file -> ()
+  history_set ~max_length:100 |> ignore;
+  (fun from_user ->
+    if from_user = "quit" then exit 0;
+    history_add from_user |> ignore)
+  |> user_input "> " verbose_parser verbose_typeinfer
