@@ -151,9 +151,31 @@ let rec eval ?(ambient : expr Ambient.t = Ambient.empty) (e : expr) =
            ^ print_expr err)
       | Left err -> Left ("eval failed on MatchList\n" ^ err))
   | Nothing t -> Right (Nothing t)
-  | Just e -> Right e
-  | IsEmpty e -> Right e
-  | IsNothing e -> Right e
+  | Just e -> (
+    match eval e ~ambient with
+    | Right v -> Right (Just v)
+    | Left err -> Left ("eval failed on Just\n" ^ err)
+  )
+  | IsEmpty e -> (
+    match eval e ~ambient with
+    | Right (Nil _) -> Right (Boolean true)
+    | Right (Cons (_, _)) -> Right (Boolean false)
+    | Right err ->
+        Left
+          ("eval failed on IsEmpty: expected a Cons or a Nil, found "
+         ^ print_expr err)
+    | Left err -> Left ("eval failed on IsEmpty\n" ^ err)
+  )
+  | IsNothing e -> (
+    match eval e ~ambient with
+    | Right (Nothing _) -> Right (Boolean true)
+    | Right (Just _) -> Right (Boolean false)
+    | Right err ->
+        Left
+          ("eval failed on IsNothing: expected a Nothing or a Just, found "
+         ^ print_expr err)
+    | Left err -> Left ("eval failed on IsNothing\n" ^ err)
+  )
   | MatchMaybe (e1, e2, x, e3) -> (
       match eval e1 ~ambient with
       | Right (Nil _) -> eval e2 ~ambient
@@ -163,4 +185,13 @@ let rec eval ?(ambient : expr Ambient.t = Ambient.empty) (e : expr) =
             ("eval failed on MatchList: expected a Cons or a Nil, found "
            ^ print_expr err)
       | Left err -> Left ("eval failed on MatchList\n" ^ err))
-  | FromJust e -> Right e
+  | FromJust e -> (
+    match eval e ~ambient with
+    | Right (Nothing _) -> Left ("eval failed on FromJust: called on Nothing")
+    | Right (Just v) -> eval v ~ambient
+    | Right err ->
+        Left
+          ("eval failed on FromJust: expected a Just, found "
+         ^ print_expr err)
+    | Left err -> Left ("eval failed on FromJust\n" ^ err)
+  )
