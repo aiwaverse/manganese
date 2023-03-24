@@ -2,6 +2,7 @@ open Interp.Main
 open Manganese.Expr
 open Manganese.Typeinfer
 open Manganese.Types
+open Manganese.Val
 open Manganese.Eval
 open Either
 open LNoise
@@ -29,7 +30,7 @@ let rec user_input prompt verbose_parser verbose_typeinfer cb =
                 print_endline ("Evaluation failed. " ^ err);
                 user_input prompt verbose_parser verbose_typeinfer cb
             | Right v ->
-                print_endline (print_expr v);
+                print_endline (print_l1val v);
                 user_input prompt verbose_parser verbose_typeinfer cb)
       with ParseError ->
         print_endline "Parser error, please check input.";
