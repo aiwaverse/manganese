@@ -2,8 +2,7 @@ open Expr
 open Types
 
 let test1string =
-  "let x : int = 2 in (let foo : int -> int = fn y : int => x + y in let x : \
-   int = 5 in foo 10)"
+  "let x : int = 2 in (let foo : int -> int = fn y : int => x + y in let x : int = 5 in foo 10)"
 
 let test1 =
   Let
@@ -17,8 +16,7 @@ let test1 =
           Let ("x", Int, Number 5, App (Var "foo", Number 10)) ) )
 
 let test2string =
-  "let x : int = 2 in (let foo : int -> int = fn y : int => x + y in let x : \
-   int = 5 in foo)"
+  "let x : int = 2 in (let foo : int -> int = fn y : int => x + y in let x : int = 5 in foo)"
 
 let test2 =
   Let
@@ -32,9 +30,7 @@ let test2 =
           Let ("x", Int, Number 5, Var "foo") ) )
 
 let test3string =
-  "let rec lookup (l: [(int, int)]): int -> maybe int = (fn key : int => match \
-   l with nil => nothing : int | x :: xs => if (fst x) = key then just (snd x) \
-   else (lookup xs) key) in (lookup [(1,10),(2,20), (3,30)] : [(int, int)]) 2"
+  "let rec lookup (l: [(int, int)]): int -> maybe int = (fn key : int => match l with nil => nothing : int | x :: xs => if (fst x) = key then just (snd x) else (lookup xs) key) in (lookup [(1,10),(2,20), (3,30)] : [(int, int)]) 2"
 
 let test3 =
   LetRec
@@ -66,9 +62,7 @@ let test3 =
           Number 2 ) )
 
 let test4string =
-  "let rec map (f : int -> int): [int] -> [int] = (fn l : [int] => match l \
-   with nil => nil : int | x :: xs => (f x) :: ((map f) xs)) in (map (fn x: \
-   int => x + x)) [10, 20, 30] : [int]"
+  "let rec map (f : int -> int): [int] -> [int] = (fn l : [int] => match l with nil => nil : int | x :: xs => (f x) :: ((map f) xs)) in (map (fn x: int => x + x)) [10, 20, 30] : [int]"
 
 let test4 =
   LetRec
