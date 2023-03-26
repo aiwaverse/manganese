@@ -53,6 +53,10 @@ open Manganese.Expr
 
 %nonassoc IN
 %nonassoc ELSE
+%nonassoc ID
+%nonassoc INT
+%nonassoc TRUE
+%nonassoc FALSE
 %left AND
 %left OR
 %left LEQ
