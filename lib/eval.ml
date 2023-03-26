@@ -90,8 +90,8 @@ let rec eval ?(ambient : l1val Ambient.t = Ambient.empty) (e : expr) :
                    ^ "is not a valid operator"))
           | Right err ->
               Left
-                ("eval failed on AppOp's second argument: expected a Int, \
-                  found " ^ print_l1val err)
+                ("eval failed on AppOp's second argument: expected a Int, found "
+               ^ print_l1val err)
           | Left err -> Left ("eval failed on AppOp\n" ^ err))
       | Right (VBoolean bool) -> (
           let b1 = bool in
@@ -107,13 +107,13 @@ let rec eval ?(ambient : l1val Ambient.t = Ambient.empty) (e : expr) :
                    ^ "is not a valid operator"))
           | Right err ->
               Left
-                ("eval failed on AppOp's second argument: expected an Bool, \
-                  found " ^ print_l1val err)
+                ("eval failed on AppOp's second argument: expected an Bool, found "
+               ^ print_l1val err)
           | Left err -> Left ("eval failed on AppOp\n" ^ err))
       | Right err ->
           Left
-            ("eval failed on AppOp's first argument: expected an Bool or a \
-              Int, found " ^ print_l1val err)
+            ("eval failed on AppOp's first argument: expected an Bool or a Int, found "
+           ^ print_l1val err)
       | Left err -> Left ("eval failed on AppOp\n" ^ err))
   | Tuple (first, second) -> (
       match eval first ~ambient with
@@ -171,7 +171,7 @@ let rec eval ?(ambient : l1val Ambient.t = Ambient.empty) (e : expr) :
   | Nothing _ -> Right VNothing
   | Just e -> (
       match eval e ~ambient with
-      | Right v -> Right v
+      | Right v -> Right (VJust v)
       | Left err -> Left ("eval failed on Just\n" ^ err))
   | IsEmpty e -> (
       match eval e ~ambient with
