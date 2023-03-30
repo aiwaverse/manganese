@@ -107,8 +107,7 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Add, Boolean false, Number 2)))) );
-    ( "operator application, add - poorly written, second expression isn't \
-       number"
+    ( "operator application, add - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Add, Number 1, Boolean false)))) );
@@ -119,8 +118,7 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Sub, Boolean false, Number 2)))) );
-    ( "operator application, sub - poorly written, second expression isn't \
-       number"
+    ( "operator application, sub - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Sub, Number 1, Boolean false)))) );
@@ -131,8 +129,7 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Mul, Boolean false, Number 2)))) );
-    ( "operator application, mul - poorly written, second expression isn't \
-       number"
+    ( "operator application, mul - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Mul, Number 1, Boolean false)))) );
@@ -143,13 +140,11 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Div, Boolean false, Number 2)))) );
-    ( "operator application, div - poorly written, second expression isn't \
-       number"
+    ( "operator application, div - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Div, Number 1, Boolean false)))) );
-    ( "operator application, div - poorly written, second expression evaluates \
-       to zero"
+    ( "operator application, div - poorly written, second expression evaluates to zero"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (Div, Number 1, Number 0)))) );
@@ -171,8 +166,7 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (LTE, Boolean false, Number 2)))) );
-    ( "operator application, LTE - poorly written, second expression isn't \
-       number"
+    ( "operator application, LTE - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (LTE, Number 1, Boolean false)))) );
@@ -194,8 +188,7 @@ let appOpTests =
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (GTE, Boolean false, Number 2)))) );
-    ( "operator application, GTE - poorly written, second expression isn't \
-       number"
+    ( "operator application, GTE - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (GTE, Number 1, Boolean false)))) );
@@ -213,13 +206,11 @@ let appOpTests =
     ( "operator application, And - well written" >:: fun _ ->
       assert_equal (Right (VBoolean true))
         (eval (AppOp (And, Boolean true, Boolean true))) );
-    ( "operator application, And - poorly written, first expression isn't \
-       boolean"
+    ( "operator application, And - poorly written, first expression isn't boolean"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (And, Number 1, Boolean false)))) );
-    ( "operator application, And - poorly written, second expression isn't \
-       number"
+    ( "operator application, And - poorly written, second expression isn't number"
     >:: fun _ ->
       assert_bool "failed on applcation operator"
         (is_left (eval (AppOp (And, Boolean false, Number 1)))) );
@@ -310,11 +301,18 @@ let tailTests =
         (is_left (eval (Tail (Cons (Var "x", Nil Int))))) );
   ]
 
+let justAndNothingTests =
+  [
+    ( "just" >:: fun _ ->
+      assert_equal (Right (VJust (VNumber 3))) (eval (Just (Number 3))) );
+    ("nothing" >:: fun _ -> assert_equal (Right VNothing) (eval (Nothing Int)));
+  ]
+
 let tests =
   "test suite for eval"
   >::: simpleTests @ ifTests @ tupleTests @ varTests @ appTests @ appOpTests
        @ letTests @ fstTests @ sndTests @ nilTests @ consTests @ headTests
-       @ tailTests
+       @ tailTests @ justAndNothingTests
 (*@ nothingTests @ justTests
   @ matchListTests @ matchMaybeTests @ isEmptyTests @ isNothingTests
   @ fromJustTests*)

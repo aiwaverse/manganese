@@ -47,9 +47,12 @@ As possíveis construções da linguagem, com exemplos em alto nível:
 | Cons | 1 :: 2 :: (nil : int) |
 | Head | hd (1 :: nil : int) |
 | Tail | tl (1 :: nil : int) |
+| IsEmpty | isempty (1 :: 2 :: (nil : int))
 | Pattern matching em listas | match x with nil => false | x :: xs => x = 0 |
 | Just | just 3 |
 | Nothing | nothing : int |
+| IsNothing | isnothing (just 3) |
+| FromJust | fromjust (just 3) |
 | Pattern matching em maybe | match x with nothing => false | just x => x = 0 |
 ## Açúcares Sintáticos
 Atualmente, o parser possuí trếs açúcares sintáticos para facilitar a programação: funções de múltiplos argumentos, literais de listas e introdução de escopos recursivos simplifcado, conforme exemplos:
@@ -69,27 +72,49 @@ A precedência dos operadores da linguagem a princípio segue a seguinte ordem:
  5. Operadores aritiméticos + e -
  6. Operadores booleanos
 
-Os operadores e funções são todos associativos a direita, com exceção do operador ::, para tornar mais fácil a criação de listas. Pode ser necessário o uso de parênteses nas expressões para garantir a ordem desejada.
+Os operadores e funções são todos associativos a direita, com exceção do operador ::, para tornar mais fácil a criação de listas. 
+Costuma ser necessário o uso de parênteses nas expressões para garantir a ordem desejada (um problema do parser a ser resolvido ainda).
 
 # Rodando o projeto
 ## Build
-Para buildar o projeto, usamos a ferramenta [dune](https://github.com/ocaml/dune) e o gerenciador de pacotes [opam](https://opam.ocaml.org/) para instalação da biblioteca de testes:
+Para buildar o projeto, usamos a ferramenta [dune](https://github.com/ocaml/dune) e o gerenciador de pacotes [opam](https://opam.ocaml.org/) para instalação da biblioteca de testes e do [linenoise](https://github.com/ocaml-community/ocaml-linenoise):
 
-    opam install ounit2
+    opam install ounit2 linenoise
     dune build
-  Atualmente o projeto não tem nada para uma main, então todas as interações são feitas através do [utop](https://opam.ocaml.org/blog/about-utop/).
-  
 
-    dune utop
-
+## Usando o REPL
+A forma recomendada de usar o projeto é através da REPL construída com o [linenoise](https://github.com/ocaml-community/ocaml-linenoise), para isso, basta buildar o projeto e rodar o executável, o mesmo ainda possuí dois argumentos de linha de comando: `-verbose-typeinfer` e `-verbose-parser`, cada um faz com que a REPL imprima os resultados "brutos" do typeinfer e do parser.
+É possível rodar direto do `dune`:
+```
+dune exec --  manganese -verbose-typeinfer -verbose-parser  
+```
+Abaixo, há explicações de como usar as funções a parte do projeto.
 ## Usando o parser
-O parser está localizado no namespace `Interp`, em espcial, a função que, dada uma string, retorna uma expressão da linguagem, é `Interp.Main.parse`.
+O parser está localizado no namespace `Interp`, em espcial, a função que, dada uma string, retorna uma expressão da linguagem, é `Interp.Main.parse`. O parser não tem mensagens de erro boas pois foi feito de forma monolítica, ele joga uma exceção do tipo `ParseError`
 ```
 utop # Interp.Main.parse "1 + 2";;
 - : Manganese.Expr.AppOp (Manganese.Expr.Add, Manganese.Expr.Number 1, Manganese.Expr.Number 2)
 ```
 ## Usando o typeinfer
-WIP
+O `typeinfer` é uma função que recebe uma expressão da linguagem (no nível inteiro), e retorna um `Either string l1type`, em caso de sucesso, temos uma `Right l1type`, contendo o tipo inferido, e em caso de erro, uma `Left string`, onde a string contém a mensagem de erro. O typeinfer está localizado em `Manganese.Typeinfer.typeinfer`.
+```
+utop # Manganese.Typeinfer.typeinfer (Manganese.Expr.AppOp (Manganese.Expr.Add, Manganese.Expr.Number 1, Manganese.Expr.Number 2));
+- : Either.Right Manganese.Types.Int
+utop # Manganese.Typeinfer.typeinfer (Manganese.Expr.AppOp (Manganese.Expr.Add, Manganese.Expr.Number 1, Manganese.Expr.Boolean true));
+- : Either.Left "typeinferAppOp failed on second argument, expected Int, found Bool"
+```
+## Usando o eval
+O `eval` é uma função que recebe uma expressão da linguagem (no nível inteiro), e retorna um `Either string l1val`, em caso de sucesso, temos uma `Right l1val`, contendo o valor final, e em caso de erro, uma `Left string`, onde a string contém a mensagem de erro. O eval está localizado em `Manganese.Eval.eval`.
+A ideia do eval é ser usado apenas em funções que já foram bem tipadas com o typeinfer, os casos onde o mesmo retorna um erro são:
+- head ou tail de uma lista vazia
+- divisão por zero
+- fromjust de um nothing
+```
+utop # Manganese.Eval.eval (Manganese.Expr.AppOp (Manganese.Expr.Add, Manganese.Expr.Number 1, Manganese.Expr.Number 2));;
+- : Either.Right (Manganese.Val.VNumber 3)
+utop # Manganese.Eval.eval (Manganese.Expr.FromJust (Manganese.Expr.Nothing Manganese.Types.Int));;
+- : Either.Left "eval failed on FromJust: called on Nothing"
+```
 ## Testando o projeto
 Após instalar a biblioteca de testes [ounit2](https://opam.ocaml.org/packages/ounit2/), basta usar o seguinte comando:
 ```
@@ -104,4 +129,4 @@ OK
 [^4]: Para facilitar a inferência de tipos, nil e nothing são tipados, e foi optado por usar o tipo interno, ou seja, em uma expressão do tipo [int], o nil é tipado como int, a mesma lógica vale pare o nothing. 
 [^5]: Nessa versão, cada argumento obrigatóriamente precisa estar envolto em parênteses.
 [^6]: Essa versão **não** pode ser usada dentro do let rec sem açúcar sintático.
-[^7]: Ao aplicar uma função assim, se faz necessário o uso de parênteses, exemplo: `((fn (x : int) (y : int) => x + y) 2 ) 3)`.
+[^7]: Ao aplicar uma função assim, se faz necessário o uso de parênteses, exemplo: `(((fn (x : int) (y : int) => x + y) 2) 3)`.
